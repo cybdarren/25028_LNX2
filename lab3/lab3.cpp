@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     egt::experimental::UiLoader loader;
     auto window = std::static_pointer_cast<egt::Window>(loader.load("file:ui.xml"));
  
-    auto spinProgress = window->find_child<egt::v1::SpinProgress>("SpinProgress1");
+    auto spinProgress = window->find_child<egt::SpinProgress>("SpinProgress1");
 
     egt::v1::PeriodicTimer animateTimer(std::chrono::milliseconds(100));
     animateTimer.on_timeout([&spinProgress, &animateTimer] ()
