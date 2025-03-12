@@ -8,70 +8,84 @@
 # the action
 #
 
-import threading
+import asyncio
 import argparse
 import socket
 
 ###############################################################################
-# This is the main server loop that listens for connections from clients
-def run_server(port):
-    hostname = socket.gethostname()
-    server_ip = socket.gethostbyname(hostname)
+# Asynchronous server application that listens to connections from a client
+class AsyncTCPIPServer:
+    def __init__(self, port: int):
+        hostname = socket.gethostname()
+        self.server_ip = socket.gethostbyname(hostname)
+        self.port = port
+        self.clients = []
 
-    # create the socket object
-    try:
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        # handle communications with a single client
+        self.clients.append(writer)
+        addr = writer.get_extra_info('peername')
+        print(f"New connection from {addr}")
 
-        # bind the socket to a specific address and port
-        server.bind((server_ip, port))
-
-        # listen for incoming connections
-        server.listen(0)
-        print(f"Listening on {server_ip}:{port}")
-
-        while True:
-            # accept a client connection
-            client_socket, addr = server.accept()
-            print(f"Accepted connection from {addr[0]}:{addr[1]}")
-            # start a new thread to handle the client
-            thread = threading.Thread(target=handle_client, args=(client_socket, addr,))
-            thread.start()
-
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        server.close()
-
-###############################################################################
-# This is a basic client, multiple threads of this same code are run
-# one for each connected client
-def handle_client(client_socket, addr):
-    try:
-        while True:
-            # receive and print client messages
-            request = client_socket.recv(1024)
-            request = request.decode("utf-8")
-
-            match request.lower():
-                case "close":
-                    client_socket.send("closed".encode("utf-8"))
+        try:
+            while True:
+                data = await reader.read(1024)
+                if not data:
+                    print(f"Client {addr} disconnected.")
                     break
-                case "lock":
-                    print("Lock")
-                case "unlock":
-                    print("Unlock")
-                case _:
-                    print(f"Received: {request}")
+                client_message = data.decode("utf-8").strip()
+                print(f"Received from {addr}: {client_message}")
+                
+                match client_message.lower():
+                    case 'lock':
+                        print(f"Request to lock from {addr}.")
 
-            response = "accepted".encode("utf-8")
-            client_socket.send(response)
+                    case 'unlock':
+                        print(f"Request to unlock from {addr}")
+                        
+                    case 'close':
+                        print(f"Closing connection with {addr}.")
+                        break
 
-    except Exception as e:
-        print(f"Error when handling clinet: {e}")
-    finally:
-        client_socket.close()
-        print(f"Connection client ({addr[0]}:{addr[1]}) closed")
+                    case _:
+                        # default echo back the message
+                        writer.write(data)
+                        await writer.drain()
 
+        except asyncio.CancelledError:
+            print(f"Connection with {addr} cancelled.")
+        finally:
+            self.clients.remove(writer)
+            writer.close()
+            await writer.wait_closed()
+
+
+    async def send_message(self):
+        # asynchronously send messages to all connected clients
+        try:
+            while True:
+                message = await asyncio.to_thread(input, "Enter message to send to clients: ")
+                if message:
+                    for client in self.clients:
+                        client.write(message.encode("utf-8"))
+                        await client.drain()
+                    print("Message sent to all clients.")
+        except asyncio.CancelledError:
+            print("Server message sender task cancelled.")
+
+
+    async def run(self):
+        # start the server
+        server = await asyncio.start_server(self.handle_client, self.server_ip, self.port)
+        addr = server.sockets[0].getsockname()
+        print(f"Server running on {addr}")
+
+        sender_task = asyncio.create_task(self.send_message())
+
+        async with server:
+            await server.serve_forever()
+
+        await sender_task
 
 
 ###############################################################################
@@ -83,4 +97,5 @@ if __name__ == '__main__':
                         help='Port to receive connections on')
     args = parser.parse_args()
 
-    run_server(args.port)
+    server = AsyncTCPIPServer(args.port)
+    asyncio.run(server.run())

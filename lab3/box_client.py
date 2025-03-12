@@ -6,39 +6,75 @@
 # and this terminal is a remote controller for it.
 #
 
+import asyncio
 import argparse
-import socket
 
+###############################################################################
+# Class to handle Asynchronous TCPIP Client operations
+class AsyncTCPIPClient:
+    def __init__(self, host: str, port: int):
+        self.host = host
+        self.port = port
+        self.writer = None
+        self.sender_task = None
+        self.connection_closed = asyncio.Event()
 
-def run_client(server_ip, server_port):
-    # create a socket object
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    async def handle_server_messages(self, reader: asyncio.StreamReader):
+        # continuously read messages from the server.
+        try:
+            while True:
+                server_message = await reader.read(1024)
+                if not server_message:
+                    print("Server closed the connection.")
+                    self.connection_closed.set()
+                    break
+                server_message = server_message.decode("utf-8").strip()
+                print(f"Received: {server_message}")
 
-    # establish connection with server
-    client.connect((server_ip, server_port))
+                match server_message.lower():
+                    case 'close':
+                        print("Server requested to close the connection.")
+                        self.connection_closed.set()
+                        if self.sender_task:
+                            self.sender_task.cancel()
+                        if self.writer and not self.writer.is_closing():
+                            self.writer.close()
+                            await self.writer.wait_closed()
+                        break
 
-    try:
-        while True:
-            # input message and send it to the server
-            msg = input("Enter message: ")
-            client.send(msg.encode("utf-8")[:1024])
+        except asyncio.CancelledError:
+            print("Listener task cancelled.")
 
-            # receive message from the server
-            response = client.recv(1024)
-            response = response.decode("utf-8")
+    async def send_messages(self, writer: asyncio.StreamWriter):
+        # send messages to the server
+        try:
+            while not self.connection_closed.is_set():
+                message = await asyncio.to_thread(input, "Enter message: ")
+                if self.connection_closed.is_set():
+                    break
+                writer.write(message.encode("utf-8"))
+                await writer.drain()
+                if message.lower() == "close":
+                    print("Closing connection...")
+                    writer.close()
+                    await writer.wait_closed()
+                    break
+        except asyncio.CancelledError:
+            print("Sender task cancelled.")
+        except (BrokenPipeError, ConnectionResetError):
+            print("Connection lost. Stopping message sending.")
 
-            # if server sent us "closed" in the payload, we break out of the loop and close our socket
-            if response.lower() == "closed":
-                break
+    async def run(self):
+        # handles the connection, sending and receiving
+        print(f"Connecting to {self.host}:{self.port}...")
+        reader, writer = await asyncio.open_connection(self.host, self.port)
+        self.writer = writer
 
-            print(f"Received: {response}")
+        listener_task = asyncio.create_task(self.handle_server_messages(reader))
+        self.sender_task = asyncio.create_task(self.send_messages(writer))
 
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        # close client socket (connection to the server)
-        client.close()
-        print("Connection to server closed")
+        await asyncio.gather(listener_task, self.sender_task, return_exceptions=True)
+        print("Connection closed.")
 
 ###############################################################################
 # main entry point for the box client
@@ -49,4 +85,6 @@ if __name__ == '__main__':
                         help='Port to receive connections on')
     args = parser.parse_args()
 
-    run_client('.'.join(args.server), args.port)
+    client = AsyncTCPIPClient('.'.join(args.server), args.port)
+#    client = AsyncTCPIPClient("192.168.2.200", 8000)
+    asyncio.run(client.run())

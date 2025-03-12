@@ -1,4 +1,7 @@
 {
+    "SERVER_IP":"192.168.2.200",
+    "RESPONDER_PORT":"8000",
+
     "TARGET_IP":"192.168.2.247",
     "DEBUG_PORT":"6666",
     "BINARY":"lab3.bin",
