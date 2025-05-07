@@ -45,6 +45,17 @@
 					<property name="value" starting="0" ending="100" stepping="5">0</property>
 					<property name="show_label">true</property>
 				</widget>
+				<widget name="lblMessage" type="Label">
+					<property name="show">true</property>
+					<property name="x">60</property>
+					<property name="y">843</property>
+					<property name="width">600</property>
+					<property name="height">100</property>
+					<property name="border">1</property>
+					<property name="font" weight="normal" slant="normal" size="24.000000">Sans Serif</property>
+					<property name="text">hello</property>
+					<property name="text_align">center</property>
+				</widget>
 			</widget>
 		</widget>
 	</widgets>

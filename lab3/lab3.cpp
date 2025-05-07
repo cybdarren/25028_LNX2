@@ -59,6 +59,7 @@ int main(int argc, char** argv)
             else
             {
                 std::cerr << "Read error: " << ec.message() << std::endl;
+                std::exit(1);
             }
         });
     };
