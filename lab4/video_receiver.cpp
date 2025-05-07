@@ -3,9 +3,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/// @[Example]
+/* 
+ * MASTERs Class 25028 LNX2 - Lab 4
+ * This application creates 
+ */
 #include <egt/ui>
-
 #include <iostream>
 
 int main(int argc, char** argv)
@@ -95,4 +97,4 @@ int main(int argc, char** argv)
 
     return app.run();
 }
-/// @[Example]
+
