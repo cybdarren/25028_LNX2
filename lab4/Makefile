@@ -1,6 +1,6 @@
-all: video_receiver.cpp
-	$(CXX) $(CXXFLAGS) `pkg-config libegt --cflags --libs` -Og video_receiver.cpp -g -o video_receiver.bin
+all: lab4.cpp
+	$(CXX) $(CXXFLAGS) `pkg-config libegt --cflags --libs` -Wno-psabi -Og lab4.cpp -g -o lab4.bin
 
 clean:
-	rm -rf video_receiver.bin
+	rm -rf lab4.bin
 	

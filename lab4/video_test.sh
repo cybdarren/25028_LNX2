@@ -42,7 +42,6 @@ gst-launch-1.0 -v filesrc location=bbb.avi \
 ! jpegenc quality=80 ! rtpjpegpay pt=96 \
 ! udpsink host="192.168.2.248" port=5000
 
-
 # receiver this will be full screen
 gst-launch-1.0 -v udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 ! \
     rtpjpegdepay ! jpegdec ! videoscale ! videoconvert ! queue ! kmssink force-modesetting=true
