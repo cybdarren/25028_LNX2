@@ -9,6 +9,7 @@
  */
 #include <memory>
 
+#include <egt/themes/midnight.h>
 #include <egt/ui>
 #include <egt/asio.hpp>
 #include <egt/uiloader.h>
@@ -22,29 +23,47 @@ using egt::asio::ip::tcp;
 
 int main(int argc, char** argv)
 {
+    // create the EGT application
     egt::Application app(argc, argv);
 
+    // create the TopWindow
+    egt::TopWindow win(egt::Size(720, 1280), egt::PixelFormat::argb8888);
+    // set the Theme
+    egt::global_theme(std::make_unique<egt::MidnightTheme>());
+
+    // Create a 24 point font used by multiple controls
+    auto customFont = egt::Font("Sans Serif", 24, egt::Font::Weight::normal, egt::Font::Slant::normal);
+
+    // Create the VideoWindow, this is done early so that it can claim a hardware overlay
     egt::VideoWindow player(egt::Size(320, 240), egt::PixelFormat::yuv420, egt::WindowHint::heo_overlay);
+    player.move(egt::Point(200, 900));
+    win.add(player);
 
-    egt::experimental::UiLoader loader;
-    auto window = std::static_pointer_cast<egt::Window>(loader.load("file:lab4_ui.xml"));
-    if (!window)
-    {
-        std::cerr << "Error: Unable to load UI from lab4_ui.xml\n";
-        return 1;
-    }
+    // Create the start streaming button and place where the video window will appear
+    auto streamButton = std::make_shared<egt::Button>("Start Streaming");
+    streamButton->align(egt::AlignFlag::bottom | egt::AlignFlag::center_horizontal);
+    streamButton->font(customFont);
+    win.add(streamButton);
 
-    auto spinProgress = window->find_child<egt::SpinProgress>("SpinProgress1");
-    auto button = window->find_child<egt::Button>("Button1");
-    auto lbl = window->find_child<egt::Label>("lblMessage");
-    // this is just a placeholder widget, it will be replaced with the actual player later on
-    auto videoWindow = window->find_child<egt::Window>("videoWindow");
+    // Create the SpinControl
+    auto spinProgress = std::make_shared<egt::SpinProgress>(egt::Rect(160, 30, 400, 400),0, 100, 0);
+    spinProgress->font(egt::Font("Sans Serif", 48, egt::Font::Weight::normal, egt::Font::Slant::normal));
+    spinProgress->show_label(true);
+    win.add(spinProgress);
 
-    // if (!spinProgress || !button || !lbl || !videoWindow)
-    // {
-    //     std::cerr << "Error: UI elements not found\n";
-    //     return 1;
-    // }
+    // Create the Open request button
+    auto button = std::make_shared<egt::Button>("Open", egt::Rect(260, 500, 200, 120));
+    button->border(2);
+    button->border_radius(12);
+    button->font(customFont);
+    win.add(button);
+
+    // Create the label for server messages
+    auto lbl = std::make_shared<egt::Label>("Press the button to unlock", egt::Rect(60, 680, 600, 100));
+    lbl->border(1);
+    lbl->text_align(egt::AlignFlag::center);
+    lbl->font(customFont);
+    win.add(lbl);
 
     // auto& io_context = app.event().io();
     // auto socket = std::make_shared<tcp::socket>(io_context);
@@ -155,116 +174,77 @@ int main(int argc, char** argv)
     //     });
     // });
 
-    // egt::Window rc(egt::Rect(0, 0, 320, 240));
-    // egt::Rect videoFrameSize(rc.);
-
-    // egt::VideoWindow player(egt::Size(320, 240), egt::PixelFormat::yuv420, egt::WindowHint::overlay);
-    player.move_to_center(videoWindow->center());
-    // topWindow.add(player);
-
-    // player.move_to_center(videoWindow->center());
-    // auto window1 = window->find_child<egt::Window>("Window1");
-    // window1->add(player);  
-//    player.move_to_center(topWindow->center());
- //   topWindow->add(player);
-
-    // create a button an position it in the middle of the videoWindow widget
-    egt::Button streamButton("Start Streaming");
-    streamButton.align(egt::AlignFlag::center_vertical | egt::AlignFlag::center_horizontal);
-    videoWindow->add(streamButton);
-   
-    streamButton.on_click([&](egt::Event&)
+    // handle click of the streaming button by triggering a GStreamer process to receive video over UDP
+    streamButton->on_click([&](egt::Event&)
     {
-        std::cout << "Streaming starting" << std::endl;
+        std::cout << "Starting Streaming" << std::endl;
 
         player.gst_custom_pipeline("udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 \
             ! rtpjpegdepay ! jpegdec ! capsfilter name=vcaps caps=video/x-raw,width=320,height=240,format=I420 ! videoscale \
             ! videoconvert ! appsink name=appsink");
 
-//        streamButton.hide();
-        videoWindow->hide();
-        window->add(player);
-        player.zorder_top();
+        streamButton->hide();
         player.show();
         player.play();
-//        window->hide();
-//        topWindow.layout();
-//        videoWindow->hide();
     });
 
-    window->show();
-//    videoWindow->show();
-    window->layout();
+    win.show();
+    win.layout();
     app.run();
 
-    // close the connection
-    // egt::asio::error_code ec;
-    // socket->shutdown(tcp::socket::shutdown_both, ec);
-    // socket->close();
+//     // close the connection
+//     // egt::asio::error_code ec;
+//     // socket->shutdown(tcp::socket::shutdown_both, ec);
+//     // socket->close();
 
 
-    // /////////////////////////////////////////////////////////////////////////////////
+//     // /////////////////////////////////////////////////////////////////////////////////
 
-    // egt::TopWindow window;
+//     egt::TopWindow window;
+//     egt::global_theme(std::make_unique<egt::MidnightTheme>());    
 
-    // std::string ipaddr = "192.168.2.248";
-    // std::string portno = "5000";
-    // uint32_t swidth = 320;
-    // uint32_t sheight = 240;
-    // uint32_t frate = 20;
+//     // Create a 24 point font used by multiple controls
+//     auto customFont = egt::Font("Sans Serif", 24, egt::Font::Weight::normal, egt::Font::Slant::normal);
 
-    // auto label1 = std::make_shared<egt::Label>("", egt::AlignFlag::center);
-    // window.add(label1);
+//     auto label1 = std::make_shared<egt::Label>("", egt::AlignFlag::center);
+//     window.add(label1);
 
-    // egt::VideoWindow player(egt::Size(swidth,sheight), egt::PixelFormat::yuv420, egt::WindowHint::overlay);
-    // player.move_to_center(window.center());
-    // window.add(player);
+//     egt::VideoWindow player(egt::Size(320,240), egt::PixelFormat::yuv420, egt::WindowHint::heo_overlay);
+// //    player.move_to_center(window.center());
+//     player.move(egt::Point(200, 900));
+// //    player.border(1);
+//     window.add(player);
+// //     player.move(egt::Point(200, 900));
+// //     player.border(1);
+// //     win.add(player);
 
-    // auto hpos = std::make_shared<egt::HorizontalBoxSizer>();
-    // hpos->align(egt::AlignFlag::bottom | egt::AlignFlag::center_horizontal);
-    // hpos->margin(10);
-    // window.add(hpos);
+//     egt::Button button("Start Streaming");
+//     button.align(egt::AlignFlag::bottom | egt::AlignFlag::center_horizontal);
+//     window.add(button);
 
-    // egt::Button button("Start Streaming");
-    // button.align(egt::AlignFlag::bottom | egt::AlignFlag::center_horizontal);
-    // hpos->add(button);
+//     const auto ssize = egt::Application::instance().screen()->size();
 
-    // const auto ssize = egt::Application::instance().screen()->size();
+//     button.on_click([&](egt::Event&)
+//     {
+//         player.gst_custom_pipeline("udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 \
+//             ! rtpjpegdepay ! jpegdec ! capsfilter name=vcaps caps=video/x-raw,width=320,height=240,format=I420 ! videoscale \
+//             ! videoconvert ! appsink name=appsink");
+//         player.show();
+//         player.play();
 
-    // button.on_click([&](egt::Event&)
-    // {
-    //     player.gst_custom_pipeline("udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 \
-    //         ! rtpjpegdepay ! jpegdec ! capsfilter name=vcaps caps=video/x-raw,width=320,height=240,format=I420 ! videoscale \
-    //         ! videoconvert ! appsink name=appsink");
-    //     player.show();
+//         button.hide();
+//     });
 
-    //     // std::ostringstream buffer;
-    //     // buffer << "udp://" << ipaddr  << ":" << portno;
-    //     // player.media(buffer.str());
-    //     player.play();
+//     window.on_show([&]()
+//     {
+//     	std::ostringstream buffer;
+//         buffer << "Go for it";
+//     	label1->text(buffer.str());
+//     });
 
-    //     // auto wscale = static_cast<float>(ssize.width()) / player.width();
-    //     // auto hscale = static_cast<float>(ssize.height()) / player.height();
-    //     // player.move(egt::Point(0, 0));
-    //     // player.scale(wscale, hscale);
+//     window.show();
+//     window.layout();
 
-    //     button.hide();
-    // });
-
-    // window.on_show([&]()
-    // {
-    // 	std::ostringstream buffer;
-    // 	buffer << "\n\n\n Set Device IP address to 10.42.0.10 \n\n\n Run below command on Ubuntu Machine in Terminal and Click Start Streaming: \n\n\n" <<
-    // 			"gst-launch-1.0 -v ximagesrc  ! videoconvert  ! videoscale ! video/x-raw,format=I420,width=" << swidth << "\n"\
-    // 			",height=" << sheight << ",framerate=" << frate << "/1" << " ! jpegenc quality=80 ! rtpjpegpay " << " ! udpsink host=" << \
-	// 			ipaddr  << " port=" << portno << "\n";
-
-    // 	label1->text(buffer.str());
-    // });
-
-    // window.show();
-    // window.layout();
-
-    // return app.run();
+//     return app.run();
 }
 
