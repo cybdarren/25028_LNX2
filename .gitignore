@@ -1,2 +1,8 @@
 *.bin
+resources/
+mgs/
+meta-arm/
+meta-atmel/
+meta-openembedded/
+poky/
 
