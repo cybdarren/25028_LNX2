@@ -1,5 +1,4 @@
 *.bin
-resources/
 mgs/
 meta-arm/
 meta-atmel/
