@@ -4,5 +4,7 @@ KernelCommandLine=!nfsroot
 
 [Network]
 Address=10.0.0.20/24
-Gateway=10.0.0.20
+Gateway=10.0.0.10
+DNS=10.0.0.10
+
 
