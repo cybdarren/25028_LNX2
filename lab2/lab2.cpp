@@ -10,10 +10,10 @@ int main(int argc, char** argv)
     egt::Application app(argc, argv);
  
     egt::experimental::UiLoader loader;
-    auto window = std::static_pointer_cast<egt::Window>(loader.load("file:ui.xml"));
+    auto window = std::static_pointer_cast<egt::Window>(loader.load("file:lab2_ui.xml"));
     if (!window)
     {
-        std::cerr << "Error: Unable to load UI from ui.xml\n";
+        std::cerr << "Error: Unable to load UI from lab2_ui.xml\n";
         return 1;
     }
  
@@ -29,9 +29,11 @@ int main(int argc, char** argv)
     egt::v1::PeriodicTimer animateTimer(std::chrono::milliseconds(100));
     animateTimer.on_timeout([&spinProgress, &animateTimer] ()
     {
-        if (spinProgress->value() > 0)
+        int spinValue = spinProgress->value() - 5;
+
+        if (spinValue > 0)
         {
-            spinProgress->value(spinProgress->value() - 5);
+            spinProgress->value(spinValue);
         }
         else
         {
