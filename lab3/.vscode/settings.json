@@ -2,7 +2,7 @@
     "SERVER_IP":"192.168.2.200",
     "SERVER_PORT":"8000",
 
-    "TARGET_IP":"192.168.2.248",
+    "TARGET_IP":"192.168.2.249",
     "DEBUG_PORT":"6666",
     "BINARY":"lab3.bin",
     "SDK_DIR": "/opt/poky-atmel/5.0.3/environment-setup-cortexa7hf-neon-vfpv4-poky-linux-gnueabi",
