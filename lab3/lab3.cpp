@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     };
     
     // connect to the server at startup
-    resolver->async_resolve("192.168.2.198", "8000",
+    resolver->async_resolve("10.0.0.10", "8000",
         [socket, start_reading](const egt::asio::error_code& ec, tcp::resolver::results_type endpoints)
     {
         if (!ec)
@@ -102,6 +102,7 @@ int main(int argc, char** argv)
             animateTimer.cancel();
 
             // Add code to send a message when the timer is completed
+
         }
     });
     
@@ -112,6 +113,7 @@ int main(int argc, char** argv)
         animateTimer.start();
 
         // Add code to send a message when the timer is started
+
     });
 
     window->show();
