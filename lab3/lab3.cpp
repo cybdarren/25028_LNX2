@@ -64,9 +64,8 @@ int main(int argc, char** argv)
         });
     };
     
-
     // connect to the server at startup
-    resolver->async_resolve("10.0.0.10", "8000",
+    resolver->async_resolve("192.168.2.198", "8000",
         [socket, start_reading](const egt::asio::error_code& ec, tcp::resolver::results_type endpoints)
     {
         if (!ec)
@@ -91,7 +90,6 @@ int main(int argc, char** argv)
         }
     });
 
-
     egt::v1::PeriodicTimer animateTimer(std::chrono::milliseconds(100));
     animateTimer.on_timeout([&spinProgress, &animateTimer, socket] ()
     {
@@ -103,20 +101,18 @@ int main(int argc, char** argv)
         {
             animateTimer.cancel();
 
-            // Add code to send a message to the server after the timeout
+            // Add code to send a message when the timer is completed
         }
     });
     
-
     button->on_click([&, socket] (egt::Event&)
     {
         animateTimer.cancel();
         spinProgress->value(100);
         animateTimer.start();
 
-        // Add code to send a message to the server on the button press
+        // Add code to send a message when the timer is started
     });
-
 
     window->show();
     app.run();
