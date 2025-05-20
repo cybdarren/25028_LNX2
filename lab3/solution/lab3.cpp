@@ -103,7 +103,20 @@ int main(int argc, char** argv)
         {
             animateTimer.cancel();
 
-            // Add code to send a message to the server after the timeout
+            // Send "Lock" message when animation reaches 0
+            std::string data = "Lock";
+            egt::asio::async_write(*socket, egt::asio::buffer(data),
+                [socket](const egt::asio::error_code& ec, std::size_t bytes_transferred)
+                {
+                    if (!ec)
+                    {
+                        std::cout << "Lock message sent: " << bytes_transferred << " bytes" << std::endl;
+                    }
+                    else
+                    {
+                        std::cerr << "Write error: " << ec.message() << std::endl;
+                    }
+                });
         }
     });
     
@@ -114,7 +127,19 @@ int main(int argc, char** argv)
         spinProgress->value(100);
         animateTimer.start();
 
-        // Add code to send a message to the server on the button press
+        std::string data = "Unlock";
+        egt::asio::async_write(*socket, egt::asio::buffer(data),
+            [socket](const egt::asio::error_code& ec, std::size_t bytes_transferred)
+            {
+                if (!ec)
+                {
+                    std::cout << "Unlock message sent: " << bytes_transferred << " bytes" << std::endl;
+                }
+                else
+                {
+                    std::cerr << "Write error: " << ec.message() << std::endl;
+                }
+            });
     });
 
 
