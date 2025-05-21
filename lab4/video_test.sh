@@ -5,7 +5,7 @@
 #   The first version is for directly using gstreamer to receive the data. This will play in full
 #   screen.
 #   The second version uses the egt_video application which wraps the gstreamer pipeline in a simple
-#   UI. The same pipeline can be uses in your EGt application once you have tested it.
+#   UI. The same pipeline can be used in your EGt application once you have tested it.
 
 
 ###################################################################################################

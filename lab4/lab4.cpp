@@ -18,7 +18,7 @@
 using egt::asio::ip::tcp;
 
 // Server details for messaging and video streaming
-#define SERVER_ADDRESS      "192.168.2.200"
+#define SERVER_ADDRESS      "192.168.2.198"
 #define SERVER_MSG_PORT     "8000"
 #define SERVER_VIDEO_PORT   "5000"  // Used in the GStreamer string
 
