@@ -11,6 +11,41 @@
 import asyncio
 import argparse
 import socket
+import subprocess
+
+###############################################################################
+# Start video stream helper
+async def start_video_stream(client_ip: str):
+    pipeline = [
+        'gst-launch-1.0', '-v',
+        'filesrc', 'location=masters.avi',
+        '!', 'decodebin',
+        '!', 'videoconvert', '!', 'videoscale',
+        '!', 'video/x-raw,format=I420,width=320,height=240,framerate=24/1',
+        '!', 'videorate', '!', 'video/x-raw,framerate=20/1',
+        '!', 'jpegenc', 'quality=80', '!', 'rtpjpegpay', 'pt=96',
+        '!', 'udpsink', f'host={client_ip}', 'port=5000'         
+    ]
+
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *pipeline,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        # start a tasks that waits for the process to end
+        async def wait_for_video_end():
+            await proc.wait()
+            print(f"Video stream to client {client_ip} finished.")
+        
+        asyncio.create_task(wait_for_video_end())
+        return proc
+    
+    except FileNotFoundError:
+        print("Error: gst-launch-1.0 not found.")
+    except Exception as e:
+        print(f"Error starting video stream: {e}")
 
 ###############################################################################
 # Asynchronous server application that listens to connections from client
@@ -26,8 +61,10 @@ class AsyncTCPIPServer:
         # handle communications with a single client
         self.clients.append(writer)
         addr = writer.get_extra_info('peername')
+        client_ip, _ = addr
         print(f"New connection from {addr}")
 
+        video_proc = None
         try:
             while True:
                 data = await reader.read(1024)
@@ -38,6 +75,11 @@ class AsyncTCPIPServer:
                 print(f"Received from {addr}: {client_message}")
                 
                 match client_message.lower():
+                    case 'play':
+                        # start streaming video to the client
+                        video_proc = await start_video_stream(client_ip)
+                        print(f"Video streaming started for {client_ip}")
+
                     case 'lock':
                         print(f"Request to lock from {addr}.")
 
@@ -59,6 +101,15 @@ class AsyncTCPIPServer:
             self.clients.remove(writer)
             writer.close()
             await writer.wait_closed()
+
+            # stop the video stream
+            if video_proc is not None:
+                try:
+                    video_proc.terminate()
+                    await video_proc.wait()
+                    print(f"Video stream terminated for {client_ip}")
+                except ProcessLookupError:
+                    print(f"Video process for {client_ip} already exited.")
 
 
     async def send_message(self):
