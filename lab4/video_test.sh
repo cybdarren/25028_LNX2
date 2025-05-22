@@ -17,7 +17,7 @@ gst-launch-1.0 -v filesrc location=masters.avi \
 ! video/x-raw,format=I420,width=320,height=240,framerate=24/1 \
 ! videorate ! video/x-raw,framerate=20/1 \
 ! jpegenc quality=80 ! rtpjpegpay pt=96 \
-! udpsink host="192.168.2.249" port=5000
+! udpsink host="10.0.0.20" port=5000
 
 # receiver, this will be full screen
 gst-launch-1.0 -v udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 ! \
@@ -36,7 +36,7 @@ gst-launch-1.0 -v v4l2src device=/dev/video0 \
     ! videoconvert ! videoscale \
     ! video/x-raw,format=I420,width=320,height=240,framerate=20/1 \
     ! jpegenc quality=80 ! rtpjpegpay pt=96 \
-    ! udpsink host="192.168.2.248" port=5000
+    ! udpsink host="10.0.0.20" port=5000
 
 # receiver this will be full screen
 gst-launch-1.0 -v udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 ! \
