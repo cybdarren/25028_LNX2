@@ -18,7 +18,7 @@
 using egt::asio::ip::tcp;
 
 // Server details for messaging and video streaming
-#define SERVER_ADDRESS      "192.168.2.198"
+#define SERVER_ADDRESS      "10.0.0.10"
 #define SERVER_MSG_PORT     "8000"
 #define SERVER_VIDEO_PORT   "5000"  // Used in the GStreamer string
 
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 
         // send a request to the server to stream the video over UDP
         // Just like the Lock and Unlock Commands add a call to send the message Play to the server
-        
+
     });
 
     // Display the window and start the main loop
