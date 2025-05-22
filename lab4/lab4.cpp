@@ -186,28 +186,15 @@ int main(int argc, char** argv)
         std::cout << "Starting Streaming" << std::endl;
 
         // GStreamer pipeline to decode JPEG stream over UDP into the video window
-        player.gst_custom_pipeline("udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 \
-            ! rtpjpegdepay ! jpegdec ! capsfilter name=vcaps caps=video/x-raw,width=320,height=240,format=I420 ! videoscale \
-            ! videoconvert ! appsink name=appsink");
+        player.gst_custom_pipeline("THIS NEEDS REPLACING WITH THE CORRECT PIPELINE");
 
         streamButton->hide();  // Hide the button after click
         player.show();         // Show video window
         player.play();         // Start playing stream
 
         // send a request to the server to stream the video over UDP
-        std::string data = "Play";
-        egt::asio::async_write(*socket, egt::asio::buffer(data),
-            [socket](const egt::asio::error_code& ec, std::size_t bytes_transferred)
-        {
-            if (!ec)
-            {
-                std::cout << "Play message sent: " << bytes_transferred << " bytes" << std::endl;
-            }
-            else
-            {
-                std::cerr << "Write error: " << ec.message() << std::endl;
-            }
-        });        
+        // Just like the Lock and Unlock Commands add a call to send the message Play to the server
+        
     });
 
     // Display the window and start the main loop
