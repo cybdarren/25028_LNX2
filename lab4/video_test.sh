@@ -26,7 +26,6 @@ gst-launch-1.0 -v udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,pay
 # receiver, this will be via an EGT based player application
 egt_video --width 320 --height 240 --pipeline "udpsrc port=5000 caps=application/x-rtp,encoding-name=JPEG,payload=26 \
     ! rtpjpegdepay ! jpegdec ! capsfilter name=vcaps caps=video/x-raw,width=320,height=240,format=I420 ! videoscale ! 
-    video/x-raw,width=640,height=480 !\
     videoconvert ! appsink name=appsink"
 
 ###########################################################################################
