@@ -9,11 +9,11 @@
             "cStandard": "c17",
             "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-arm",
-            "compilerPath": "/opt/poky-atmel/5.0.3/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-g++",
+            "compilerPath": "/opt/mchp-lnx2-sdk/sysroots/x86_64-oesdk-linux/usr/bin/arm-oe-linux-gnueabi/arm-oe-linux-gnueabi-g++",
             "compilerArgs": [
                 "-mfpu=neon-vfpv4",
                 "-mfloat-abi=hard",
-                "--sysroot=/opt/poky-atmel/5.0.3/sysroots/cortexa7hf-neon-vfpv4-poky-linux-gnueabi"
+                "--sysroot=/opt/mchp-lnx2-sdk/sysroots/cortexa7hf-neon-vfpv4-oe-linux-gnueabi"
             ]
         }
     ],
